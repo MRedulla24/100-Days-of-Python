@@ -1,4 +1,4 @@
-# Turtle Crossing Game
+# States Guessing Game
 # By Marco Redulla
 # Day 20 (04/07/2024)
 import os
