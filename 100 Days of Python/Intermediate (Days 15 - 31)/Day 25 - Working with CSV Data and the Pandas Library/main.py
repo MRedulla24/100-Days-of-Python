@@ -1,6 +1,6 @@
 # States Guessing Game
 # By Marco Redulla
-# Day 20 (04/07/2024)
+# Day 20 (10/07/2024)
 import os
 import pandas as pd
 import turtle
