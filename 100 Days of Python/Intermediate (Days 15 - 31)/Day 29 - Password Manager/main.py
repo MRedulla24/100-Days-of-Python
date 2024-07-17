@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip
+import json
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate_password():
     
@@ -30,7 +31,24 @@ def generate_password():
     
     password_prompt.insert(index=0, string=password)
     confirm["text"] = "Random password has been generated"
+# ---------------------------- SEARCH PASSWORD ------------------------------- #
+# Day 30 code
+def search():
+    query = website_prompt.get()
+    try:
+        with open(f"{FILEPATH}\data.json", "r") as data_file:
+            data = json.load(data_file)
 
+            email = data[query].get("email")
+            password = data[query].get("password")
+            
+    except FileNotFoundError:
+        confirm["text"] = "No passwords have been saved yet."
+    except KeyError as error_message:
+        confirm["text"] = f"Error: No passwords for {error_message} have been saved."
+    else:
+        messagebox.showinfo(title=query, message=f"Here are your details for {query}:\nEmail: {email}\nPassword: {password}\n")
+            
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save():
     website = website_prompt.get()
@@ -38,6 +56,14 @@ def save():
     password = password_prompt.get()
 
     details = {"website": website, "user": user, "password": password}
+    
+    json_data = {
+        website: {
+            "email": user,
+            "password": password
+        }
+    }
+    
     empty = []
     for key in details:
         if len(details.get(key)) == 0:
@@ -50,20 +76,38 @@ def save():
         messagebox.showinfo(title="Error", message=f"The {', '.join(empty[:-1])}, & {empty[-1]} fields are not completed. Please complete all fields.")
         return
 
+    # Additional Verification
     is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered\nEmail: {user} \nPassword: {password} \n\nIs it okay to save?")
     
     if is_ok:
-        with open(FILEPATH, "a") as file:
-            file.write(f"website: {website} | user: {user} | password: {password}\n")
+        # Day 29 code
+        # with open(f"{FILEPATH}\data.txt", "a") as file:
+        #     file.write(f"website: {website} | user: {user} | password: {password}\n")
     
-        website_prompt.delete(0,END)
-        password_prompt.delete(0,END)
+        # website_prompt.delete(0,END)
+        # password_prompt.delete(0,END)
+        
+        #Day 30 code (updated to use .json instead of .txt)
+        try:
+            with open(f"{FILEPATH}\data.json", "r") as data_file:
+                data = json.load(data_file)
+        except FileNotFoundError:
+            with open(f"{FILEPATH}\data.json", "w") as data_file:
+                data.dump(json_data, data_file, indent=4) # indent formats JSON file to be more readable
+        else:
+            data.update(json_data)
+                
+            with open(f"{FILEPATH}\data.json", "w") as data_file:
+                json.dump(data, data_file, indent=4)
+        finally:
+            website_prompt.delete(0,END)
+            password_prompt.delete(0,END)
 
         confirm["text"] = f"Password for {website} has been added!"
 
 # ---------------------------- UI SETUP ------------------------------- #
 PADLOCK_FILEPATH = r"100 Days of Python\Intermediate (Days 15 - 31)\Day 29 - Password Manager\logo.png"
-FILEPATH = r"100 Days of Python\Intermediate (Days 15 - 31)\Day 29 - Password Manager\data.txt"
+FILEPATH = r"100 Days of Python\Intermediate (Days 15 - 31)\Day 29 - Password Manager"
 
 
 window = Tk()
@@ -86,8 +130,8 @@ password_text = Label(text="Password:")
 password_text.grid(column=0, row=3)
 
 # Prompts
-website_prompt = Entry(width=35)
-website_prompt.grid(column=1, row=1, columnspan=2)
+website_prompt = Entry(width=21)
+website_prompt.grid(column=1, row=1)
 website_prompt.focus()
 
 user_prompt = Entry(width=35)
@@ -97,6 +141,9 @@ user_prompt.insert(index=0, string="test.email@gmail.com")
 password_prompt = Entry(width=21)
 password_prompt.grid(column=1, row=3)
 
+# Search Button
+search_button = Button(text="Search", command=search)
+search_button.grid(column=2, row=1)
 # Generate Password Button
 password_button = Button(text="Generate Password", command=generate_password)
 password_button.grid(column=2, row=3)

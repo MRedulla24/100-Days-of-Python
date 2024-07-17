@@ -11,5 +11,5 @@ conversion = {row.letter:row.code for (index,row) in phonetic_alphabet.iterrows(
 
 user_input = list(input("Enter a word:").upper())
 
-converted = [conversion[char] if char.isalpha() else " " for char in user_input]
+converted = [conversion[char] for char in user_input if char.isalpha()]
 print(converted)
